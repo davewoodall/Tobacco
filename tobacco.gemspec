@@ -8,8 +8,8 @@ Gem::Specification.new do |gem|
   gem.version       = Tobacco::VERSION
   gem.authors       = ["Craig Williams"]
   gem.email         = ["cwilliams.allancraig@gmail.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = %q{Url content fetcher and file writer}
+  gem.summary       = %q{File writer that can read from a url or take a string and write to file}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($/)
@@ -17,4 +17,5 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   gem.add_development_dependency 'rspec'
+  gem.add_development_dependency 'pry'
 end
