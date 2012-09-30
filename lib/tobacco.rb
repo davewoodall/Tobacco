@@ -2,7 +2,6 @@
 # configuration options
 #
 require 'open-uri'
-require 'timeout'
 
 module Tobacco
   @base_path              = '/tmp/published_content'
@@ -28,7 +27,6 @@ module Tobacco
   end
 end
 
-require 'tobacco/callback_null_object'
 require 'tobacco/burnout.rb'
 require 'tobacco/smoker'
 require 'tobacco/roller'
