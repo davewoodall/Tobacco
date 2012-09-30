@@ -74,23 +74,29 @@ base_path is the base folder where all other folders and files will live when pu
 All file writing paths generated will be appended to the base_path.
 
 
-### Required Methods in Writer Classes ###
+### Methods in Writer Classes ###
 
-```ruby
-content_method
-```
+**Optional**
 
 If the Writer class will be providing its own content, say from manipulating data from a database, this is the method Tobacco will be calling to get that content.
 
 It is not required otherwise.
 
+Return a String
+
 ```ruby
-content_url_method
+def content
+  # A string to be written to file
+end
 ```
+
+**Required**
 
 The url that will be read for content is created based on the published_host and the string returned from this method.
 
-ex.
+The following example will produce a url of "http://localhost:3000/entertainment/videos/1"
+
+Return a String
 
 ```ruby
 def content_url
@@ -98,14 +104,20 @@ def content_url
 end
 ```
 
-Will produce a url of "http://localhost:3000/entertainment/videos/1"
-
-
-```ruby
-output_filepath_method
-```
 
 The ouput_filepath can return a string or an array of path options. All are joined with the base_path to create the full path the file location.
+
+Return a String or Array
+
+```ruby
+def output_filepath
+  [ 'public', 'videos', '1', 'index.html' ]
+
+  # or
+
+  'public/videos/1/index.html'
+end
+```
 
 
 ## Hook Methods ##
@@ -138,7 +150,7 @@ The error is a Tobacco::Error object with the following attributes:
 msg      - A short description of the error
 content  - The content or lack of content
 filepath - The output path where the content was to be written
-error    - The error that was raised
+error    - The error that was raised. An error object that responds to message.
 ```
 
 
@@ -153,19 +165,49 @@ end
 
 ## Public API ##
 
+The first thing to call is generate_file_paths so that the content_url and output_filepath is available to Tobacco for reading and writing.
+
 ```ruby
 generate_file_paths
 ```
+
+When the read method is called, it will do three things.
+  
+  1. Set the reader to either the calling class,
+      because it implemented the content method, or to an instance of Tobacco::Inhaler to prepare for reading.
+  2. Read the content
+  3. Verify content was read successfully.
+      If not, the callback :on_read_error will be called with an instance of Tobacco::Error as described above.
 
 ```ruby
 read
 ```
 
+Write can be called after these first two or you can skip the read method if the content is provided directly. In either case, if the content is written successfully the :on_success callback is called. If not, the :on_write_error callback is called.
+
 ```ruby
 write!
 ```
 
-###Class Usage###
+Example using all three methods
+
+```ruby
+writer = Tobacco::Smoker.new(self)
+writer.generate_file_paths
+writer.read
+writer.write!
+```
+
+Example when setting the content directly. This takes the content as a string and writes it to file.
+
+```ruby
+writer = Tobacco::Smoker.new(self)
+writer.generate_file_paths
+writer.content = 'lorem ipsum'
+writer.write!
+```
+
+###Usage###
 
 There are only three methods to add to your class that Tobacco needs to do its work and
 only two of those are required. The third method allows your class to provide its own
@@ -179,7 +221,10 @@ Here is an example class using all three methods.
 module Writers
   class HTMLWriter
     def write!
-      Tobacco::Smoker.new(self).write!
+      writer = Tobacco::Smoker.new(self)
+      writer.generate_file_paths
+      writer.read
+      writer.write!
     end
 
     # If this method is present, Tobacco will use it instead of the content_url method.
@@ -205,7 +250,10 @@ This example includes the callback methods
 module Writers
   class HTMLWriter
     def write!
-      Tobacco::Smoker.new(self).write!
+      writer = Tobacco::Smoker.new(self)
+      writer.generate_file_paths
+      writer.read
+      writer.write!
     end
 
     # If this method is present, Tobacco will use it instead of the content_url method.
@@ -244,6 +292,10 @@ module Writers
   end
 end
 ```
+
+## Final Thoughts ##
+
+To avoid duplication, we wrap the callbacks and write! method in a helper module that is included in all the Writer classes. This makes the individual Writers very small and easy to maintain.
 
 
 ## Contributing
