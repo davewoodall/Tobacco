@@ -1,6 +1,16 @@
 require 'spec_helper'
 
 shared_examples_for "it's configured" do
+  before do
+    Tobacco.configure do |config|
+      config.published_host         = published_host
+      config.base_path              = base_path
+      config.content_method         = content_method
+      config.content_url_method     = content_url_method
+      config.output_filepath_method = output_filepath_method
+    end
+  end
+
   it 'sets the publish host' do
     Tobacco.published_host.should == published_host
   end
@@ -34,16 +44,6 @@ describe Tobacco do
       let(:content_url_method)     { :content_url }
       let(:output_filepath_method) { :output_filepath }
 
-      before do
-        Tobacco.configure do |config|
-          config.published_host         = published_host
-          config.base_path              = base_path
-          config.content_method         = content_method
-          config.content_url_method     = content_url_method
-          config.output_filepath_method = output_filepath_method
-        end
-      end
-
       it_behaves_like "it's configured"
     end
 
@@ -53,16 +53,6 @@ describe Tobacco do
       let(:content_method)         { :data }
       let(:content_url_method)     { :url }
       let(:output_filepath_method) { :out_filepath }
-
-      before do
-        Tobacco.configure do |config|
-          config.published_host         = published_host
-          config.base_path              = base_path
-          config.content_method         = content_method
-          config.content_url_method     = content_url_method
-          config.output_filepath_method = output_filepath_method
-        end
-      end
 
       it_behaves_like "it's configured"
     end
