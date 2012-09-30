@@ -1,7 +1,5 @@
 require 'spec_helper'
 require 'tobacco'
-require 'mock_configure'
-require 'mock_smokers'
 
 describe Tobacco::Roller do
 
