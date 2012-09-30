@@ -1,9 +1,5 @@
 module Tobacco
-  class CallbackNotSupportedError < RuntimeError; end
-
   class Smoker
-
-    ALLOWED_CALLBACKS = [ :on_success, :before_write, :on_read_error, :on_write_error ]
 
     attr_accessor :smoker,
       :file_path_generator,
@@ -13,9 +9,6 @@ module Tobacco
     def initialize(smoker)
       self.smoker = smoker
       @content    = nil
-      @callbacks  = {}
-
-      init_callbacks
     end
 
     def generate_file_paths
@@ -26,7 +19,9 @@ module Tobacco
       self.reader = choose_reader
       @content    = reader.send(Tobacco.content_method)
 
-      smoker.send(@callbacks[:on_read_error], 'Error reading content') unless content_present?
+      unless content_present?
+        callback(:on_read_error, 'Error reading content')
+      end
     end
 
     def write!
@@ -39,7 +34,7 @@ module Tobacco
 
         content_writer.write!
 
-        smoker.send(@callbacks[:on_success], modified_content)
+        callback(:on_success, modified_content)
 
       rescue Errno::ENOENT => e
 
@@ -50,23 +45,15 @@ module Tobacco
           error: e
         )
 
-        smoker.send(@callbacks[:on_write_error], error)
+        callback(:on_write_error, error)
       end
     end
-
-    def add_callback(name, method_name)
-      name = name.to_sym
-      raise_unless_callbacks_include(name)
-
-      @callbacks[name] = method_name
-    end
-
 
     #---------------------------------------------------------
     private
 
     def modify_content_before_writing
-      smoker.send(@callbacks[:before_write], @content)
+      callback(:before_write, @content)
     end
 
     def content_present?
@@ -90,26 +77,16 @@ module Tobacco
           # on the Inhaler instance
           #
           inhaler.instance_eval %{
-            alias :"#{Tobacco.content_method}" :fetch_content
+            alias :"#{Tobacco.content_method}" :read
           }
         end
       end
     end
 
-    def init_callbacks
-      ALLOWED_CALLBACKS.each do |name|
-        @callbacks[name] = CallbackNullObject.singleton
+    def callback(name, *args)
+      if smoker.respond_to? name
+        smoker.send(name, args)
       end
-    end
-
-    def raise_unless_callbacks_include(name)
-      unless ALLOWED_CALLBACKS.include?(name)
-        raise Tobacco::CallbackNotSupportedError, "Tobacco supports the following callbacks: #{Tobacco.allowed_callbacks}"
-      end
-    end
-
-    def self.allowed_callbacks
-      ALLOWED_CALLBACKS.join(', ')
     end
   end
 end
