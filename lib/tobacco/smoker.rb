@@ -20,7 +20,8 @@ module Tobacco
       @content    = reader.send(Tobacco.content_method)
 
       unless content_present?
-        callback(:on_read_error, 'Error reading content')
+        error = error_object('Error Reading', '', @content)
+        callback(:on_read_error, )
       end
     end
 
@@ -36,21 +37,24 @@ module Tobacco
 
         callback(:on_success, modified_content)
 
-      rescue Errno::ENOENT => e
+      rescue => e
 
-        error = Tobacco::Error.new(
-          msg: "Error writing: #{filepath}",
-          filepath: filepath,
-          content: modified_content,
-          error: e
-        )
-
+        error = error_object('Error Writing', modified_content, e)
         callback(:on_write_error, error)
       end
     end
 
     #---------------------------------------------------------
     private
+
+    def error_object(msg, modified_content, e)
+      Tobacco::Error.new(
+        msg: msg,
+        filepath: file_path_generator.filepath,
+        content: modified_content,
+        object: e
+      )
+    end
 
     def modify_content_before_writing
       callback(:before_write, @content)
