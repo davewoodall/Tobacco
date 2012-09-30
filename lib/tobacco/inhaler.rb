@@ -2,7 +2,7 @@ module Tobacco
   class Inhaler
     attr_accessor :url
 
-    def initialize(url)
+    def initialize(url = '')
       self.url = url
     end
 
