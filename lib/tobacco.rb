@@ -4,6 +4,10 @@
 require 'open-uri'
 
 module Tobacco
+
+  # Default options in the event no configuration
+  # file is created
+  #
   @base_path              = '/tmp/published_content'
   @published_host         = 'http://localhost:3000'
   @content_method         = :content
@@ -23,7 +27,13 @@ module Tobacco
   end
 
   def self.log(msg)
-    Rails.logger.info(msg)
+    msg = "LOGGING: #{msg}"
+
+    if defined? Rails
+      Rails.logger.info(msg)
+    else
+      puts msg
+    end
   end
 end
 
