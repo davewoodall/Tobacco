@@ -1,8 +1,10 @@
 module Tobacco
   class Exhaler
+    attr_accessor :content, :filepath
 
-    def initialize(content, filepath)
-      @content, @filepath = content, filepath
+    def initialize(content = '', filepath = '')
+      self.content = content
+      self.filepath = filepath
     end
 
     def write!
@@ -11,13 +13,12 @@ module Tobacco
     end
 
     def create_directory
-      Tobacco.log("Creating directory: #{File.dirname(@filepath)}")
-      FileUtils.mkdir_p( File.dirname(@filepath) )
+      FileUtils.mkdir_p File.dirname(filepath)
     end
 
     def write_content_to_file
-      File.open(@filepath, 'w') do |f|
-        f.write @content
+      File.open(filepath, 'w') do |f|
+        f.write content
       end
     end
 

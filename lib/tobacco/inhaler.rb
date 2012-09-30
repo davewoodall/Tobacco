@@ -1,17 +1,13 @@
 module Tobacco
   class Inhaler
+    attr_accessor :url
 
     def initialize(url)
-      @url = url
+      self.url = url
     end
 
-    def fetch_content
-      @smoke ||= Tobacco::Burnout.try(3) { URI.parse(@url).read }
-
-    rescue OpenURI::HTTPError => e
-      # @error_handler.call "Could not fetch content from url #{@url} -- Got '#{e}'"
+    def read
+      @content ||= Tobacco::Burnout.try(3) { URI.parse(url).read }
     end
-
   end
-
 end
