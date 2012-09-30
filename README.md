@@ -1,6 +1,6 @@
 # Tobacco
 
-Tobacco is a convenience wrapper around fetching content from a url, or using the content supplied to it, verifying that content was received, creating a directory structure where the file will live and finally writing the content to that file.
+Tobacco is a convenience wrapper around fetching content from a url or using the content supplied to it, verifying that content was received, creating a directory structure where the file will live and finally writing the content to that file.
 
 This procedure is mostly simple url reading and making directories and writing to a file. We deal with a system where many files are being written to a specific parent directory and urls are formed using a pre-determined host and structure. The implementation details are consistent and to avoid duplication in our code, we extract the things that don't change from the things that do.
 
