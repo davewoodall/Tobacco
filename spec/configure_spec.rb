@@ -1,4 +1,4 @@
-shared_examples_for "it's configured" do
+shared_examples_for "it is configured" do
   it 'sets the publish host' do
     Tobacco.published_host.should == published_host
   end

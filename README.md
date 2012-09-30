@@ -1,4 +1,4 @@
-# Tobacco
+# Tobacco [![Build Status](https://secure.travis-ci.org/craigwilliams/tobacco.png)](http://travis-ci.org/craigwilliams/tobacco)
 
 Tobacco is a convenience wrapper around fetching content from a url or using the content supplied to it, verifying that content was received, creating a directory structure where the file will live and finally writing the content to that file.
 

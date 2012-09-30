@@ -21,7 +21,7 @@ describe Tobacco do
         end
       end
 
-      it_behaves_like "it's configured"
+      it_behaves_like "it is configured"
     end
 
     context 'configuration options override defaults' do
@@ -41,7 +41,7 @@ describe Tobacco do
         end
       end
 
-      it_behaves_like "it's configured"
+      it_behaves_like "it is configured"
     end
   end
 end
