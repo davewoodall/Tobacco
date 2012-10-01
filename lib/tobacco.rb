@@ -27,12 +27,14 @@ module Tobacco
   end
 
   def self.log(msg)
-    msg = "LOGGING: #{msg}"
+    log_msg =  "\n*******************************************\n"
+    log_msg += "Tobacco::Log: #{msg}\n"
+    log_msg += "*******************************************\n"
 
     if defined? Rails
-      Rails.logger.info(msg)
+      Rails.logger.info(log_msg)
     else
-      puts msg
+      puts log_msg
     end
   end
 end
