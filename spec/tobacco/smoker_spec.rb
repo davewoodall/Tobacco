@@ -21,10 +21,10 @@ describe Tobacco::Smoker do
 
     context 'when content is empty' do
       let(:inhaler)  { mock('inhaler', read: '') }
-      let(:filepath) { mock('roller', content_url: '/video', filepath: '/user') }
+      let(:filepath) { mock('roller', content_url: '/video', output_filepath: '/user') }
 
       before do
-        Tobacco::Inhaler.should_receive(:new).and_return(inhaler)
+        Tobacco::Inhaler.stub(:new).and_return(inhaler)
         subject.file_path_generator = filepath
       end
 
@@ -39,10 +39,10 @@ describe Tobacco::Smoker do
     context 'content' do
       let(:content) { 'Directly set content' }
       let(:exhaler) { mock('exhaler', write!: true) }
-      let(:filepath) { mock('roller', content_url: '/video', filepath: '/user', output_filepath: '/desktop') }
+      let(:filepath) { mock('roller', content_url: '/video', output_filepath: '/desktop') }
 
       before do
-        Tobacco::Exhaler.should_receive(:new).and_return(exhaler)
+        Tobacco::Exhaler.stub(:new).and_return(exhaler)
         subject.file_path_generator = filepath
       end
 
@@ -121,7 +121,7 @@ describe Tobacco::Smoker do
       let(:filepath) { mock('roller', content_url: '/video') }
 
       before do
-        Tobacco::Inhaler.should_receive(:new).and_return(inhaler)
+        Tobacco::Inhaler.stub(:new).and_return(inhaler)
         subject.file_path_generator = filepath
       end
 
@@ -152,7 +152,7 @@ describe Tobacco::Smoker do
       let(:filepath) { mock('roller', content_url: '/video') }
 
       before do
-        Tobacco::Inhaler.should_receive(:new).and_return(inhaler)
+        Tobacco::Inhaler.stub(:new).and_return(inhaler)
         subject.file_path_generator = filepath
       end
 
@@ -176,11 +176,11 @@ describe Tobacco::Smoker do
 
       describe '#on_read_error' do
         let(:inhaler)  { mock('inhaler', read: '') }
-        let(:filepath) { mock('roller', content_url: '/video', filepath: '/file/path') }
+        let(:filepath) { mock('roller', content_url: '/video', output_filepath: '/file/path') }
         let(:smoker)   { Writer.new }
 
         before do
-          Tobacco::Inhaler.should_receive(:new).and_return(inhaler)
+          Tobacco::Inhaler.stub(:new).and_return(inhaler)
           subject.file_path_generator = filepath
         end
 
