@@ -10,7 +10,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["cwilliams.allancraig@gmail.com"]
   gem.description   = %q{Url content fetcher and file writer}
   gem.summary       = %q{File writer that can read from a url or take a string and write to file}
-  gem.homepage      = ""
+  gem.homepage      = "https://github.com/CraigWilliams/Tobacco"
 
   gem.files         = `git ls-files`.split($/)
   gem.test_files    = gem.files.grep(%r{^(spec)/})
