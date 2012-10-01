@@ -17,7 +17,7 @@ module Tobacco
     end
 
     def write_content_to_file
-      File.open(filepath, 'w') do |f|
+      File.open(filepath, 'wb') do |f|
         f.write content
       end
     end
