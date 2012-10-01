@@ -306,3 +306,14 @@ To avoid duplication, we wrap the callbacks and write! method in a helper module
 4. Commit your changes (`git commit -am 'Add some feature'`)
 5. Push to the branch (`git push origin my-new-feature`)
 6. Create new Pull Request
+## Credits
+
+
+![Factory Code Labs](http://i.imgur.com/yV4u1.png)
+
+Tobacco is maintained by [Factory Code Labs](http://www.factorycodelabs.com).
+
+## License
+
+Tobacco is Copyright © 2012 Factory Code Labs. It is free software, and may be redistributed under the terms specified in the MIT-LICENSE file.
+
