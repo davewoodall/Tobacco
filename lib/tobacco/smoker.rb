@@ -41,6 +41,10 @@ module Tobacco
         callback(:on_success, modified_content)
 
       rescue => e
+        Tobacco.log("ErrorWriting: #{filepath}")
+
+        # Remove the empty file
+        File.delete(filepath) if File.exists?(filepath)
 
         error = error_object('Error Writing', modified_content, e)
         callback(:on_write_error, error)
@@ -126,7 +130,7 @@ module Tobacco
     def error_object(msg, modified_content, e)
       Tobacco::Error.new(
         msg: msg,
-        filepath: file_path_generator.filepath,
+        filepath: file_path_generator.output_filepath,
         content: modified_content,
         object: e
       )
