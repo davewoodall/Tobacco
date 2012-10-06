@@ -297,6 +297,10 @@ end
 
 To avoid duplication, we wrap the callbacks and write! method in a helper module that is included in all the Writer classes. This makes the individual Writers very small and easy to maintain.
 
+## Future Improvements ##
+
+Make a backup of the file before attempting a new write. If something goes wrong with the write and an empty file is created, restore the original.
+
 
 ## Contributing
 

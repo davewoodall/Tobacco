@@ -21,21 +21,31 @@ module Tobacco
     def generate_file_paths
       self.file_path_generator = Roller.new(smoker)
     end
+    alias :roll :generate_file_paths
 
     def read
       choose_reader
       read_content
       verify_content
     end
+    alias :inhale :read
 
+    # Public: Writes content to file allowing for manipulation
+    # of the content beforehand through the :before_write callback
+    # This is due to the fact that content can be set directly
+    # without going through the read method.
+    #
+    # Now that I am writing the doc, modifying content should
+    # be after the read process and not in this method!
+    #
     def write!
       return unless content_present?
 
-      begin
-        filepath         = file_path_generator.output_filepath
-        modified_content = modify_content_before_writing
-        content_writer   = Tobacco::Exhaler.new(modified_content, filepath)
+      filepath         = file_path_generator.output_filepath
+      modified_content = modify_content_before_writing
 
+      begin
+        content_writer = Tobacco::Exhaler.new(modified_content, filepath)
         content_writer.write!
 
         callback(:on_success, modified_content)
@@ -43,13 +53,13 @@ module Tobacco
       rescue => e
         Tobacco.log("ErrorWriting: #{filepath}")
 
-        # Remove the empty file
-        File.delete(filepath) if File.exists?(filepath)
-
         error = error_object('Error Writing', modified_content, e)
         callback(:on_write_error, error)
+
+        # raise
       end
     end
+    alias :exhale! :write!
 
 
     #---------------------------------------------------------

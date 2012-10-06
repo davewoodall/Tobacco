@@ -38,15 +38,19 @@ describe Tobacco::Smoker do
 
     context 'content' do
       let(:content) { 'Directly set content' }
-      let(:exhaler) { mock('exhaler', write!: true) }
       let(:filepath) { mock('roller', content_url: '/video', output_filepath: '/desktop') }
 
       before do
-        Tobacco::Exhaler.stub(:new).and_return(exhaler)
         subject.file_path_generator = filepath
       end
 
       context 'when providing content directly' do
+        let(:exhaler) { mock('exhaler', write!: true) }
+
+        before do
+          Tobacco::Exhaler.stub(:new).and_return(exhaler)
+          subject.file_path_generator = filepath
+        end
 
         it 'allows setting content directly' do
           exhaler.should_receive(:write!)
@@ -56,7 +60,7 @@ describe Tobacco::Smoker do
         end
 
         it 'callback :on_success is called' do
-          smoker.should_receive(:before_write).with(content).and_return(content)
+          smoker.stub(:before_write).and_return(content)
           smoker.should_receive(:on_success).with(content)
           subject.content = content
 
@@ -65,12 +69,11 @@ describe Tobacco::Smoker do
       end
 
       context 'when an error occurs during writing' do
-        let(:error) { raise RuntimeError.new('File Permission Error') }
+        let(:filepath) { mock('roller', content_url: '/video', output_filepath: '/users/blah.txt') }
 
         before do
           subject.file_path_generator = filepath
-          smoker.should_receive(:before_write).with(content).and_return(content)
-          exhaler.should_receive(:write!).and_return { error }
+          smoker.stub(:before_write).and_return(content)
         end
 
         it 'calls the callback :on_write_error' do

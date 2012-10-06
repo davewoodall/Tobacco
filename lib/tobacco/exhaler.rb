@@ -8,6 +8,8 @@ module Tobacco
     end
 
     def write!
+     backup
+
      create_directory
      write_content_to_file
     end
@@ -17,10 +19,27 @@ module Tobacco
     end
 
     def write_content_to_file
-      File.open(filepath, 'wb') do |f|
-        f.write content
+      begin
+        persist(content)
+      rescue => e
+        persist(@backup.read)
+        raise
+      ensure
+        @backup.close
       end
     end
 
+
+    private
+
+    def persist(file_content)
+      File.open(filepath, 'wb') do |f|
+        f.write file_content
+      end
+    end
+
+    def backup
+      @backup ||= Tobacco::Backup.new(filepath, content)
+    end
   end
 end

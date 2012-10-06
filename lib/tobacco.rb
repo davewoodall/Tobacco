@@ -45,4 +45,5 @@ require 'tobacco/roller'
 require 'tobacco/inhaler'
 require 'tobacco/exhaler'
 require 'tobacco/error'
+require 'tobacco/backup'
 
