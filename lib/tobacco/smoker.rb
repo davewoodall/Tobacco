@@ -1,155 +1,74 @@
 module Tobacco
-  class MissingContentError < RuntimeError
-    def message
-      "No error encountered but content is empty"
-    end
-  end
-
   class Smoker
 
-    attr_accessor :smoker,
+    attr_accessor :consumer,
       :file_path_generator,
       :reader,
-      :writer,
+      :persister,
       :content
 
-    def initialize(smoker, content = '')
-      self.smoker  = smoker
-      self.content = content
+    def initialize(consumer, content = nil)
+      self.consumer = consumer
+      self.content  = content
+
+      Tobacco::Callback.instance(consumer)
     end
 
     def generate_file_paths
-      self.file_path_generator = Roller.new(smoker)
+      self.file_path_generator = Tobacco::Roller.new(consumer)
     end
-    alias :roll :generate_file_paths
 
     def read
-      choose_reader
-      read_content
-      verify_content
+      self.content = Tobacco::ContentReader.new(self).read
     end
-    alias :inhale :read
 
     # Public: Writes content to file allowing for manipulation
     # of the content beforehand through the :before_write callback
     # This is due to the fact that content can be set directly
     # without going through the read method.
     #
-    # Now that I am writing the doc, modifying content should
-    # be after the read process and not in this method!
+    # Validate is only in the write method because
+    # the content can be set directly and the read method
+    # never called.
     #
     def write!
-      return unless content_present?
+      Tobacco::ContentValidator.new(self).validate!
+    end
 
-      filepath         = file_path_generator.output_filepath
-      modified_content = modify_content_before_writing
-
+    # Public: Called by ContentValidator if content is valid
+    #
+    def continue_write
       begin
-        content_writer = Tobacco::Exhaler.new(modified_content, filepath)
+        content_writer = Tobacco::Exhaler.new(content, filepath)
         content_writer.write!
 
-        callback(:on_success, modified_content)
+        Tobacco::Callback.instance.notify(:on_success, content)
 
       rescue => e
         Tobacco.log("ErrorWriting: #{filepath}")
 
-        error = error_object('Error Writing', modified_content, e)
-        callback(:on_write_error, error)
+        error = error_object('Error Writing', e)
+        Tobacco::Callback.instance.notify(:on_write_error, error)
 
         # raise
       end
     end
-    alias :exhale! :write!
-
 
     #---------------------------------------------------------
-    # End of Public API
-    #---------------------------------------------------------
+    private
 
-
-    #---------------------------------------------------------
-    # Write helper methods
-    #---------------------------------------------------------
-    def modify_content_before_writing
-      callback(:before_write, content)
+    def filepath
+      @filepath ||= file_path_generator.output_filepath
     end
 
-    #---------------------------------------------------------
-    # Read helper methods
-    #---------------------------------------------------------
-    def read_content
-      self.content = reader.send(Tobacco.content_method)
-    end
-
-    def verify_content
-      unless content_present?
-
-        # At this point, the content might be an error object
-        # but if not, we create one
-        #
-        object = missing_content_error(content)
-        error  = error_object('Error Reading', '', object)
-
-        callback(:on_read_error, error)
-      end
-    end
-
-    def missing_content_error(content)
-      if content.respond_to? :message
-        content
-      else
-        Tobacco::MissingContentError.new
-      end
-    end
-
-    def content_present?
-      @content_present ||= content?
-    end
-
-    def content?
-      return false if content.nil? || content.empty?
-
-      Array(content).last !~ /404 Not Found|The page you were looking for doesn't exist/
-    end
-
-    def choose_reader
-      # The reader will either be the calling class (smoker)
-      # if it provides the content method or a new Inhaler
-      # object that will be used to read the content from a url
-      #
-      self.reader = \
-        if smoker.respond_to? Tobacco.content_method
-          smoker
-        else
-          Inhaler.new(file_path_generator.content_url).tap do |inhaler|
-
-            # Add an alias for the user configured content_method
-            # so that when it is called it calls :read
-            # on the Inhaler instance
-            #
-            inhaler.instance_eval %{
-              alias :"#{Tobacco.content_method}" :read
-            }
-          end
-      end
-    end
-
-    #---------------------------------------------------------
-    # private
-
-    def error_object(msg, modified_content, e)
+    def error_object(msg, e)
       Tobacco::Error.new(
         msg: msg,
-        filepath: file_path_generator.output_filepath,
-        content: modified_content,
+        filepath: filepath,
+        content: content,
         object: e
       )
     end
 
-    def callback(name, error)
-      if smoker.respond_to? name
-        smoker.send(name, error)
-      end
-    end
   end
 end

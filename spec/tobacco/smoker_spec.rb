@@ -1,7 +1,6 @@
 require 'spec_helper'
 require 'tobacco'
 
-
 describe Tobacco::Smoker do
   before do
     Tobacco.configure do |config|
@@ -13,22 +12,21 @@ describe Tobacco::Smoker do
     end
   end
 
-  let(:smoker) { mock('smoker') }
+  let(:consumer) { mock('consumer') }
 
-  subject { Tobacco::Smoker.new(smoker) }
+  subject { Tobacco::Smoker.new(consumer) }
 
   context '#write!' do
+    let(:filepath) { mock('roller', content_url: '/video', output_filepath: '/tmp/tobacco.txt') }
+
+    before do
+      subject.file_path_generator = filepath
+    end
 
     context 'when content is empty' do
-      let(:inhaler)  { mock('inhaler', read: '') }
-      let(:filepath) { mock('roller', content_url: '/video', output_filepath: '/user') }
-
-      before do
-        Tobacco::Inhaler.stub(:new).and_return(inhaler)
-        subject.file_path_generator = filepath
-      end
 
       it 'does not attempt a write' do
+        consumer.stub(:content).and_return('')
         Tobacco::Exhaler.should_not_receive(:new)
 
         subject.read
@@ -36,172 +34,58 @@ describe Tobacco::Smoker do
       end
     end
 
-    context 'content' do
-      let(:content) { 'Directly set content' }
-      let(:filepath) { mock('roller', content_url: '/video', output_filepath: '/desktop') }
-
-      before do
-        subject.file_path_generator = filepath
-      end
+    context 'content success' do
+      let(:consumer) { mock('smoker') }
+      subject { Tobacco::Smoker.new(consumer) }
 
       context 'when providing content directly' do
+        let(:content) { 'Directly set content' }
         let(:exhaler) { mock('exhaler', write!: true) }
+        let(:filepath) { mock('roller', content_url: '/video', output_filepath: '/tmp/tobacco.txt') }
 
         before do
           Tobacco::Exhaler.stub(:new).and_return(exhaler)
-          subject.file_path_generator = filepath
+          subject.content = content
         end
 
-        it 'allows setting content directly' do
+        it 'uses the provided content' do
           exhaler.should_receive(:write!)
-          subject.content = content
+          subject.write!
+        end
 
+        it 'does not call the :before_write callback' do
+          Tobacco::Callback.instance.should_not_receive(:notify).with(:before_write, content)
           subject.write!
         end
 
         it 'callback :on_success is called' do
-          smoker.stub(:before_write).and_return(content)
-          smoker.should_receive(:on_success).with(content)
-          subject.content = content
-
+          Tobacco::Callback.instance.writer.should_receive(:on_success).with(content)
           subject.write!
         end
       end
+    end
 
+    context 'content errors' do
       context 'when an error occurs during writing' do
         let(:filepath) { mock('roller', content_url: '/video', output_filepath: '/users/blah.txt') }
 
-        before do
-          subject.file_path_generator = filepath
-          smoker.stub(:before_write).and_return(content)
-        end
-
         it 'calls the callback :on_write_error' do
-          smoker.should_receive(:on_write_error)
-          subject.content = content
+          Tobacco::Callback.instance.should_receive(:notify).once
+          subject.content = 'Directly set content'
 
           subject.write!
         end
       end
-    end
-  end
-
-  describe '#modify_content_before_writing' do
-    let(:content) { '<h1>Summer Gear</h1>' }
-    let(:modified_content) { '<h1>Winter Gear</h1>' }
-
-    before do
-      smoker.stub(:before_write).and_return(modified_content)
-    end
-
-    it 'allows the smoker to modify content before writing' do
-      subject.content = content
-
-      subject.modify_content_before_writing.should == modified_content
     end
   end
 
   describe '#generate_file_paths' do
+    before { consumer.stub(:output_filepath).and_return('/tmp/path.txt') }
+
     it 'sets the file_path_generator' do
-      Tobacco::Roller.should_receive(:new).with(smoker)
+      Tobacco::Roller.should_receive(:new).with(consumer)
 
       subject.generate_file_paths
-    end
-  end
-
-  describe '#choose_reader' do
-    context 'when smoker provides the content' do
-      before { smoker.stub(:content) }
-
-      it 'uses the smoker for the content' do
-        subject.choose_reader
-        subject.reader.should == smoker
-      end
-    end
-
-    context 'when smoker does not provide content' do
-      let(:inhaler)  { mock('inhaler', read: 'reader method') }
-      let(:filepath) { mock('roller', content_url: '/video') }
-
-      before do
-        Tobacco::Inhaler.stub(:new).and_return(inhaler)
-        subject.file_path_generator = filepath
-      end
-
-      it 'uses the smoker for the content' do
-        subject.choose_reader
-        subject.reader.should == inhaler
-      end
-    end
-  end
-
-  describe '#read_content' do
-    context 'when content is read from the smoker' do
-      let(:content) { 'Provided content' }
-
-      before { smoker.stub(:content).and_return(content) }
-
-      it 'should have the correct content' do
-        subject.choose_reader
-        subject.read_content
-
-        subject.content.should == content
-      end
-    end
-
-    context 'when content is read from url' do
-      let(:content)  { 'Content from reading url' }
-      let(:inhaler)  { mock('inhaler', read: content) }
-      let(:filepath) { mock('roller', content_url: '/video') }
-
-      before do
-        Tobacco::Inhaler.stub(:new).and_return(inhaler)
-        subject.file_path_generator = filepath
-      end
-
-      it 'should have the correct content' do
-        subject.choose_reader
-        subject.read_content
-
-        subject.content.should == content
-      end
-    end
-  end
-
-  describe '#read' do
-    context 'when content is empty' do
-      class Writer
-        attr_accessor :error
-        def on_read_error(error)
-          self.error = error
-        end
-      end
-
-      describe '#on_read_error' do
-        let(:inhaler)  { mock('inhaler', read: '') }
-        let(:filepath) { mock('roller', content_url: '/video', output_filepath: '/file/path') }
-        let(:smoker)   { Writer.new }
-
-        before do
-          Tobacco::Inhaler.stub(:new).and_return(inhaler)
-          subject.file_path_generator = filepath
-        end
-
-        it 'the callback is called on the smoker' do
-          subject.smoker.should_receive(:on_read_error)
-
-          subject.read
-        end
-
-        it 'has the correct message on the error object' do
-          subject.read
-
-          error   = subject.smoker.error
-          message = error.object.message
-
-          message.should match(/No error encountered/)
-        end
-      end
     end
   end
 end
