@@ -13,13 +13,15 @@ module Tobacco
   @content_method         = :content
   @content_url_method     = :content_url
   @output_filepath_method = :output_filepath
+  @logging                = false
 
   class << self
     attr_accessor :base_path,
       :published_host,
       :content_method,
       :content_url_method,
-      :output_filepath_method
+      :output_filepath_method,
+      :logging
   end
 
   def self.configure
@@ -27,6 +29,8 @@ module Tobacco
   end
 
   def self.log(msg)
+    return unless logging
+
     log_msg =  "\n*******************************************\n"
     log_msg += "Tobacco::Log: #{msg}\n"
     log_msg += "*******************************************\n"
@@ -46,4 +50,7 @@ require 'tobacco/inhaler'
 require 'tobacco/exhaler'
 require 'tobacco/error'
 require 'tobacco/backup'
+require 'tobacco/content_validator'
+require 'tobacco/content_reader'
+require 'tobacco/callback'
 
