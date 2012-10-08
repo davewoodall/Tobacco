@@ -34,7 +34,7 @@ module Tobacco
       begin
         filepath         = file_path_generator.output_filepath
         modified_content = modify_content_before_writing
-        content_writer   = Tobacco::Exhaler.new(modified_content, filepath)
+        content_writer   = Tobacco::Exhaler.new(modified_content || content, filepath)
 
         content_writer.write!
 
