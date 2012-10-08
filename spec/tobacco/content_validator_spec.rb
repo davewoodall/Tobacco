@@ -1,40 +1,52 @@
 require 'spec_helper'
 
+
 describe Tobacco::ContentValidator do
 
-  describe '#read' do
-    context 'when content is empty' do
-      class Writer
-        attr_accessor :error
-        def on_read_error(error)
-          self.error = error
-        end
+  class Consumer
+    def on_read_error(error)
+    end
+  end
+
+  let(:consumer) { Consumer.new }
+  let(:smoker) { Tobacco::Smoker.new(consumer) }
+
+  subject { Tobacco::ContentValidator.new(smoker) }
+
+  before do
+    smoker.stub(:filepath).and_return('/path')
+    Tobacco::Callback.instance.stub(:writer).and_return(consumer)
+  end
+
+  describe '#validate!' do
+    context 'when validation passes' do
+      let(:content) { 'Lorem ipsum' }
+
+      before { smoker.content = content }
+
+      it 'calls continue write' do
+        smoker.should_receive(:continue_write)
+        smoker.consumer.should_not_receive(:on_read_error)
+
+        subject.validate!
+      end
+    end
+  end
+
+  describe '#validate!' do
+    context 'when validation fails' do
+      before { smoker.content = '' }
+
+      it 'does not call continue write on' do
+        smoker.should_not_receive(:continue_write)
+
+        subject.validate!
       end
 
-      describe '#on_read_error' do
-        let(:inhaler)  { mock('inhaler', read: '') }
-        let(:filepath) { mock('roller', content_url: '/video', output_filepath: '/file/path') }
-        let(:smoker)   { Writer.new }
+      it 'calls on_read_error' do
+        consumer.should_receive(:on_read_error)
 
-        before do
-          # Tobacco::Inhaler.stub(:new).and_return(inhaler)
-          # subject.file_path_generator = filepath
-        end
-
-        it 'the callback is called on the smoker' do
-          # subject.writer.should_receive(:on_read_error)
-
-          # subject.read
-        end
-
-        it 'has the correct message on the error object' do
-          # subject.read
-
-          # error   = subject.writer.error
-          # message = error.object.message
-
-          # message.should match(/No error encountered/)
-        end
+        subject.validate!
       end
     end
   end

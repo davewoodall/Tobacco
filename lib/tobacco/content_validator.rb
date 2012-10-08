@@ -36,6 +36,9 @@ module Tobacco
       end
     end
 
+    #---------------------------------------------------------
+    private
+
     def content_present?
       @content_present ||= content?
     end
@@ -46,9 +49,6 @@ module Tobacco
       Array(content).last !~ /404 Not Found|The page you were looking for doesn't exist/
     end
 
-    #---------------------------------------------------------
-    private
-
     # Private: Convenience method to create a Tobacco::Error object
     #
     # msg              - Context where the error occurred
@@ -58,7 +58,7 @@ module Tobacco
     def error_object(msg, e)
       Tobacco::Error.new(
         msg: msg,
-        filepath: @smoker.file_path_generator.output_filepath,
+        filepath: @smoker.filepath,
         content: content,
         object: e
       )

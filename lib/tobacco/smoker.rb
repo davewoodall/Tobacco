@@ -54,12 +54,12 @@ module Tobacco
       end
     end
 
-    #---------------------------------------------------------
-    private
-
     def filepath
       @filepath ||= file_path_generator.output_filepath
     end
+
+    #---------------------------------------------------------
+    private
 
     def error_object(msg, e)
       Tobacco::Error.new(
