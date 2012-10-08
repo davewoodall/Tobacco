@@ -11,6 +11,16 @@ module Tobacco
       self.writer = writer
     end
 
+    # Public: Notify the writer class based on callback name
+    #         passing along data which is either content or
+    #         an error object
+    #
+    # name - symbol - the callback name
+    #
+    # data - text or object
+    #
+    # return - data
+    #
     def notify(name, data)
       if writer.respond_to? name
         writer.send(name, data)
