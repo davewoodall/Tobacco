@@ -2,6 +2,7 @@ require 'tempfile'
 
 module Tobacco
   class Backup
+    attr_reader :file
 
     def initialize(filepath, content)
       @filepath = filepath
