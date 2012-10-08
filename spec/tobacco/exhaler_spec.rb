@@ -43,6 +43,11 @@ describe Tobacco::Exhaler do
     let(:dir)      { '/tmp/base_dir/' }
     let(:content) { '<h1>Page Title</h1>' }
 
+    before do
+      FileUtils.mkdir_p(dir)
+      File.open(filepath, 'w') { |f| f.write content }
+    end
+
     after { FileUtils.rm_rf(dir) }
 
     describe '#create_directory' do
