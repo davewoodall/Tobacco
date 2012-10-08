@@ -13,11 +13,10 @@ module Tobacco
       self.content = smoker.content
     end
 
-    # Public: Verifies that content is present
-    #         If the smoker will provide the content
-    #
-    # content_provided - default (false)
-    #  Determines where to look for the content
+    # Public: Verifies that content is present and calls
+    #         continue_write on the Smoker class if so
+    #         and notifies the consumer class of the
+    #         read error if not
     #
     def validate!
       if content_present?
